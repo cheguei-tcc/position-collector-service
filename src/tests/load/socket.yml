@@ -1,0 +1,23 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 320
+      arrivalRate: 100
+    - duration: 180
+
+scenarios:
+  - name: "Emit an event"
+    engine: socketio
+    flow:
+      - emit:
+          channel: "echo"
+          data: "Hello from Artillery"
+          response:
+            channel: "echoResponse"
+            data: "Hello from Artillery"
+      - loop:
+          - emit:
+              channel: "send message"
+              data: "hello world!"
+          - think: 1
+        count: 50
