@@ -14,19 +14,21 @@ export const newServer = (logger: Logger, positionCollectorService: PositionColl
 
   const io = new Server(httpServer, {
     cors: {
-      origin: '*',
-    },
+      origin: '*'
+    }
   });
 
   io.on('connection', async (socket) => {
     logger.info(`socketId => ${socket.id} connected`);
 
-    socket.on('coordinates_sent', async (message: ResponsibleSocketMessage) => await positionCollectorService.handleResponsibleSocketMessage(message));
+    socket.on(
+      'coordinates_sent',
+      async (message: ResponsibleSocketMessage) =>
+        await positionCollectorService.handleResponsibleSocketMessage(message)
+    );
 
     socket.on('disconnecting', (reason) => {
-      logger.info(
-        `disconnecting socket: ${socket.id}, reason: ${reason}, from rooms: ${JSON.stringify([...socket.rooms])}`
-      );
+      logger.info(`disconnecting socket: ${socket.id}, reason: ${reason}, rooms: ${JSON.stringify([...socket.rooms])}`);
     });
 
     // TCP LOW LEVEL CONNECTION

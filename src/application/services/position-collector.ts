@@ -1,4 +1,4 @@
-import { Config } from '../../infraestructure/config';
+import { Config } from '../../infrastructure/config';
 import { ResponsibleSocketMessage } from '../dto/socket';
 import { Cache } from '../interfaces/cache';
 import { GeolocationAPI } from '../interfaces/gps';
@@ -19,11 +19,11 @@ const handleResponsibleSocketMessage = async (
   // the usage of CPF and others stuff from frontend is to help us to mock things if needed
   const { CPF, coordinates, school } = message;
   const { defaultDistanceThreshold, geolocationApiTtlCache } = config;
-  const cacheKey = `geoAPIRequest::${CPF}`
+  const cacheKey = `geoAPIRequest::${CPF}`;
 
   const isGeoAPIRequestCached = await geoAPICache.get(cacheKey);
   if (isGeoAPIRequestCached) {
-    logger.info(`hit geoAPICache - can't make request to geolocation API for responsible ${CPF}::${school.CNPJ}`)
+    logger.info(`hit geoAPICache - can't make request to geolocation API for responsible ${CPF}::${school.CNPJ}`);
     return;
   }
 
@@ -33,12 +33,16 @@ const handleResponsibleSocketMessage = async (
     },
     to: { ...school.coordinates }
   });
-  logger.info(`retrieved d => ${distanceMeters} t => ${estimatedTime} from => (${JSON.stringify(coordinates)}) to => (${JSON.stringify(school.coordinates)})`)
+  logger.info(
+    `retrieved d => ${distanceMeters} t => ${estimatedTime} from => (${JSON.stringify(
+      coordinates
+    )}) to => (${JSON.stringify(school.coordinates)})`
+  );
 
-  await geoAPICache.set(cacheKey, JSON.stringify({ distanceMeters, estimatedTime}), { ttl: geolocationApiTtlCache });
+  await geoAPICache.set(cacheKey, JSON.stringify({ distanceMeters, estimatedTime }), { ttl: geolocationApiTtlCache });
 
   if (distanceMeters < defaultDistanceThreshold) {
-
+    logger.info('PENDING IMPLEMENTATION OF SQS STUDENTS PICK UP QUEUE');
   }
 };
 
@@ -48,7 +52,8 @@ const newPositionCollectorService = (
   geoAPICache: Cache,
   config: Config
 ): PositionCollectorService => ({
-  handleResponsibleSocketMessage: async (message: ResponsibleSocketMessage) => handleResponsibleSocketMessage(message, logger, geoAPI, geoAPICache, config)
+  handleResponsibleSocketMessage: async (message: ResponsibleSocketMessage) =>
+    handleResponsibleSocketMessage(message, logger, geoAPI, geoAPICache, config)
 });
 
 export { newPositionCollectorService, PositionCollectorService };
