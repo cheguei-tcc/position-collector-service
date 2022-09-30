@@ -3,3 +3,12 @@ node_modules
 debug
 
 dist
+
+## CICD STUFF
+env.sh
+.terraform/*
+terraform.tfstate*
+.terraform*
+
+swarm-machines.pem
+hosts
