@@ -16,10 +16,10 @@ const initDependenciesAndStart = async (config: Config) => {
       }
     }
   });
-  
+
   const redisClient = await createRedisClient(config, logger);
   const redisCache = newRedisCache(redisClient);
-  
+
   const axiosClient = newAxiosHttpClient();
   const geoAPI = newOSRMOpenAPI(axiosClient, config);
   const positionCollectorService = newPositionCollectorService(logger, geoAPI, redisCache, config);

@@ -1,4 +1,4 @@
-import { School, Coordinates, Responsible } from "../../domain"
+import { School, Coordinates, Responsible } from '../../domain';
 
 export type ResponsibleSocketMessage = {
   coordinates: Coordinates;

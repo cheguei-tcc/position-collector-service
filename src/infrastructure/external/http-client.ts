@@ -6,6 +6,6 @@ interface HttpClient {
 
 const newAxiosHttpClient = (options?: AxiosRequestConfig): HttpClient => {
   return axios.create(options);
-}
+};
 
-export { HttpClient, newAxiosHttpClient }
+export { HttpClient, newAxiosHttpClient };

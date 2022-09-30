@@ -1,4 +1,4 @@
-import { Coordinates } from "./coordinates";
+import { Coordinates } from './coordinates';
 
 type School = {
   CNPJ: string;

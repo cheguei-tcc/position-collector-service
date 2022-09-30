@@ -1,12 +1,14 @@
-import { Coordinates } from "../../domain/coordinates";
+import { Coordinates } from '../../domain/coordinates';
 
 type CoordinatesToCompare = {
-  from: Coordinates
-  to: Coordinates
+  from: Coordinates;
+  to: Coordinates;
+};
+
+interface GeolocationAPI {
+  getDistanceAndStimatedTime: (
+    coordinates: CoordinatesToCompare
+  ) => Promise<{ estimatedTime: number; distanceMeters: number }>;
 }
 
-interface GeolocationAPI { 
-  getDistanceAndStimatedTime: (coordinates: CoordinatesToCompare) => Promise<{estimatedTime: number; distanceMeters: number;}>;
-}
-
-export { GeolocationAPI, CoordinatesToCompare }
+export { GeolocationAPI, CoordinatesToCompare };
