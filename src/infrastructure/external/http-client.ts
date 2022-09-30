@@ -5,7 +5,14 @@ interface HttpClient {
 }
 
 const newAxiosHttpClient = (options?: AxiosRequestConfig): HttpClient => {
-  return axios.create(options);
+  const client = axios.create(options);
+
+  return {
+    get: async (url: string) => {
+      const res = await client.get(url);
+      return res.data;
+    }
+  };
 };
 
 export { HttpClient, newAxiosHttpClient };

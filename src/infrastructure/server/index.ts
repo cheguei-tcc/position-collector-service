@@ -21,11 +21,13 @@ export const newServer = (logger: Logger, positionCollectorService: PositionColl
   io.on('connection', async (socket) => {
     logger.info(`socketId => ${socket.id} connected`);
 
-    socket.on(
-      'coordinates_sent',
-      async (message: ResponsibleSocketMessage) =>
-        await positionCollectorService.handleResponsibleSocketMessage(message)
-    );
+    socket.on('coordinates_sent', async (message: ResponsibleSocketMessage) => {
+      try {
+        await positionCollectorService.handleResponsibleSocketMessage(message);
+      } catch (err: any) {
+        logger.error(JSON.stringify(err));
+      }
+    });
 
     socket.on('disconnecting', (reason) => {
       logger.info(`disconnecting socket: ${socket.id}, reason: ${reason}, rooms: ${JSON.stringify([...socket.rooms])}`);

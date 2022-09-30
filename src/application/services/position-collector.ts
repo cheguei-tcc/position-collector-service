@@ -34,7 +34,7 @@ const handleResponsibleSocketMessage = async (
     to: { ...school.coordinates }
   });
   logger.info(
-    `retrieved d => ${distanceMeters} t => ${estimatedTime} from => (${JSON.stringify(
+    `retrieved for r => ${CPF} d => ${distanceMeters}m t => ${estimatedTime}s from => (${JSON.stringify(
       coordinates
     )}) to => (${JSON.stringify(school.coordinates)})`
   );
