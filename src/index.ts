@@ -27,7 +27,7 @@ const initDependenciesAndStart = async (config: Config) => {
   const { httpServer } = newServer(logger, positionCollectorService);
 
   try {
-    httpServer.listen(config.port, () => logger.info(`listening server on port: ${config.port}`));
+    httpServer.listen(config.port, () => logger.info(`listening on port: ${config.port}`));
   } catch (err: any) {
     logger.error(`server error: ${err.message}\n${err.stack}`);
   }
