@@ -1,56 +1,41 @@
-import express from 'express';
-import * as server from 'http';
-import { Server } from 'socket.io';
+import Pino from 'pino';
+import { newPositionCollectorService } from './application/services/position-collector';
+import { createRedisClient, newRedisCache } from './infrastructure/cache/redis';
+import { Config, configFromEnv } from './infrastructure/config';
+import { newAxiosHttpClient } from './infrastructure/external/http-client';
+import { newOSRMOpenAPI } from './infrastructure/external/osrm';
+import { newServer } from './infrastructure/server';
 
-import { Coordinates } from './models/coordinates';
-import axios from 'axios';
-
-import { createClient } from 'redis';
-
-const app = express();
-const client = createClient();
-
-const ioPort = 4444;
-
-const ioServer = server.createServer(app);
-
-export const axiosInstance = axios.create({
-  baseURL: 'https://swarm.cheguei.app',
-  timeout: 3000000,
-});
-
-const socketIo = new Server(ioServer, {
-  cors: {
-    origin: '*',
-  },
-});
-
-socketIo.on('connection', (socket) => {
-  socket.on('coordinates_sent', async (responsibleCoordinates: Coordinates) => {
-    await client.connect();
-    const ttlCacheKey = await client.get(
-      `${responsibleCoordinates.responsibleId}::${responsibleCoordinates.surrogateKey}`
-    );
-    if (ttlCacheKey) {
-      const schoolCoordinates = (await axiosInstance.get(
-        `/account/schools/coordinates/${responsibleCoordinates.surrogateKey}`
-      )) as any;
-      await axiosInstance.get(
-        `/route/v1/car/${responsibleCoordinates.lat},${responsibleCoordinates.long};
-        ${schoolCoordinates.lat};${schoolCoordinates.long}?overview=false`
-      );
-      client.hSet(
-        `${responsibleCoordinates.responsibleId}::${responsibleCoordinates.surrogateKey}`,
-        ''
-      );
+const initDependenciesAndStart = async (config: Config) => {
+  const logger = Pino({
+    transport: {
+      target: 'pino-pretty',
+      options: {
+        colorize: true,
+        translateTime: true
+      }
     }
   });
+  
+  const redisClient = await createRedisClient(config, logger);
+  const redisCache = newRedisCache(redisClient);
+  
+  const axiosClient = newAxiosHttpClient();
+  const geoAPI = newOSRMOpenAPI(axiosClient, config);
+  const positionCollectorService = newPositionCollectorService(logger, geoAPI, redisCache, config);
 
-  socket.on('disconnect', () => {
-    socket.disconnect();
-  });
-});
+  const { httpServer } = newServer(logger, positionCollectorService);
 
-ioServer.listen(ioPort, () => {
-  console.log(`ouvindo porta ${ioPort}`);
-});
+  try {
+    httpServer.listen(config.port, () => logger.info(`listening on port: ${config.port}`));
+  } catch (err: any) {
+    logger.error(`server error: ${err.message}\n${err.stack}`);
+  }
+};
+
+const main = async () => {
+  const config = configFromEnv();
+  await initDependenciesAndStart(config);
+};
+
+main();
