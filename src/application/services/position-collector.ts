@@ -23,7 +23,7 @@ const handleResponsibleSocketMessage = async (
 
   const isGeoAPIRequestCached = await geoAPICache.get(cacheKey);
   if (isGeoAPIRequestCached) {
-    logger.info(`hit geoAPICache - can't make request to geolocation API for responsible ${CPF}::${school.CNPJ}`);
+    logger.info(`hit geoAPICache for responsible ${CPF}::${school.CNPJ}`);
     return;
   }
 
@@ -34,7 +34,7 @@ const handleResponsibleSocketMessage = async (
     to: { ...school.coordinates }
   });
   logger.info(
-    `retrieved for r => ${CPF} d => ${distanceMeters}m t => ${estimatedTime}s from => (${JSON.stringify(
+    ` [POSITION] retrieved for r => ${CPF} \nd => ${distanceMeters}m \nt => ${estimatedTime}s \nfrom => (${JSON.stringify(
       coordinates
     )}) to => (${JSON.stringify(school.coordinates)})`
   );

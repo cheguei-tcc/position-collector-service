@@ -20,7 +20,7 @@ const configFromEnv = (): Config => ({
   awsRegion: process.env.AWS_DEFAULT_REGION ?? 'sa-east-1',
   redisHost: process.env.REDIS_HOST || 'localhost',
   defaultDistanceThreshold: Number(process.env.DEFAULT_DISTANCE_THRESHOLD) || 2000, // in metters
-  geolocationApiTtlCache: Number(process.env.GEOLOCATION_API_TTL_CACHE) || 20, // in seconds
+  geolocationApiTtlCache: Number(process.env.GEOLOCATION_API_TTL_CACHE) || 7, // in seconds
   osrmOpenAPIUrl: process.env.OSRM_OPEN_API_URL || 'https://routing.openstreetmap.de'
 });
 
