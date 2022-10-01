@@ -1,4 +1,5 @@
 import { CoordinatesToCompare, GeolocationAPI } from '../../../application/interfaces/gps';
+import { Logger } from '../../../application/interfaces/logger';
 import { Config } from '../../config';
 import { HttpClient } from '../http-client';
 
@@ -19,8 +20,10 @@ type Route = {
 const getDistanceAndStimatedTime = async (
   coordinates: CoordinatesToCompare,
   httpClient: HttpClient,
+  logger: Logger,
   config: Config
 ) => {
+  logger.info('[OSRM ROUTE OPEN API] - Calling API');
   const osrmUrl = config.osrmOpenAPIUrl;
 
   const osrmRouteUrl = `${osrmUrl}/routed-car/route/v1/driving/${coordinates.from.longitude},${coordinates.from.latitude};${coordinates.to.longitude},${coordinates.to.latitude}?overview=false&skip_waypoints=true`;
@@ -36,9 +39,9 @@ const getDistanceAndStimatedTime = async (
   };
 };
 
-const newOSRMOpenAPI = (httpClient: HttpClient, config: Config): GeolocationAPI => ({
+const newOSRMOpenAPI = (httpClient: HttpClient, logger: Logger, config: Config): GeolocationAPI => ({
   getDistanceAndStimatedTime: async (coordinates: CoordinatesToCompare) =>
-    getDistanceAndStimatedTime(coordinates, httpClient, config)
+    getDistanceAndStimatedTime(coordinates, httpClient, logger, config)
 });
 
 export { newOSRMOpenAPI };

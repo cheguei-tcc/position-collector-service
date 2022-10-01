@@ -2,6 +2,7 @@ import Pino from 'pino';
 import { newPositionCollectorService } from './application/services/position-collector';
 import { createRedisClient, newRedisCache } from './infrastructure/cache/redis';
 import { Config, configFromEnv } from './infrastructure/config';
+import { newAzureRouteAPI } from './infrastructure/external/azure';
 import { newAxiosHttpClient } from './infrastructure/external/http-client';
 import { newOSRMOpenAPI } from './infrastructure/external/osrm';
 import { newServer } from './infrastructure/server';
@@ -21,7 +22,10 @@ const initDependenciesAndStart = async (config: Config) => {
   const redisCache = newRedisCache(redisClient);
 
   const axiosClient = newAxiosHttpClient();
-  const geoAPI = newOSRMOpenAPI(axiosClient, config);
+  const geoAPI =
+    config.nodeEnv === 'prod'
+      ? newAzureRouteAPI(axiosClient, logger, config)
+      : newOSRMOpenAPI(axiosClient, logger, config);
   const positionCollectorService = newPositionCollectorService(logger, geoAPI, redisCache, config);
 
   const { httpServer } = newServer(logger, positionCollectorService);

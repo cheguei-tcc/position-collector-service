@@ -9,6 +9,8 @@ type Config = {
   defaultDistanceThreshold: number;
   geolocationApiTtlCache: number;
   osrmOpenAPIUrl: string;
+  azureApiUrl: string;
+  azureApiSubscriptionKey: string;
 };
 
 const configFromEnv = (): Config => ({
@@ -21,7 +23,9 @@ const configFromEnv = (): Config => ({
   redisHost: process.env.REDIS_HOST || 'localhost',
   defaultDistanceThreshold: Number(process.env.DEFAULT_DISTANCE_THRESHOLD) || 2000, // in metters
   geolocationApiTtlCache: Number(process.env.GEOLOCATION_API_TTL_CACHE) || 7, // in seconds
-  osrmOpenAPIUrl: process.env.OSRM_OPEN_API_URL || 'https://routing.openstreetmap.de'
+  osrmOpenAPIUrl: process.env.OSRM_OPEN_API_URL || 'https://routing.openstreetmap.de',
+  azureApiUrl: process.env.AZURE_API_URL || 'https://atlas.microsoft.com',
+  azureApiSubscriptionKey: process.env.AZURE_API_SUBSCRIPTION_KEY || ''
 });
 
 export { Config, configFromEnv };
