@@ -5,6 +5,7 @@ import { Config, configFromEnv } from './infrastructure/config';
 import { newAzureRouteAPI } from './infrastructure/external/azure';
 import { newAxiosHttpClient } from './infrastructure/external/http-client';
 import { newOSRMOpenAPI } from './infrastructure/external/osrm';
+import { newSqsPositionMsgProducer } from './infrastructure/external/sqs';
 import { newServer } from './infrastructure/server';
 
 const initDependenciesAndStart = async (config: Config) => {
@@ -26,7 +27,9 @@ const initDependenciesAndStart = async (config: Config) => {
     config.nodeEnv === 'prod'
       ? newAzureRouteAPI(axiosClient, logger, config)
       : newOSRMOpenAPI(axiosClient, logger, config);
-  const positionCollectorService = newPositionCollectorService(logger, geoAPI, redisCache, config);
+  const sqsProducer = newSqsPositionMsgProducer(logger);
+
+  const positionCollectorService = newPositionCollectorService(logger, geoAPI, redisCache, sqsProducer, config);
 
   const { httpServer } = newServer(logger, positionCollectorService);
 
