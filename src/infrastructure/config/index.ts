@@ -20,7 +20,7 @@ const configFromEnv = (): Config => ({
   redisUri: process.env.REDIS_URI ?? 'redis://localhost:6379',
   studentsPickupQueueUrl:
     process.env.STUDENTS_PICKUP_QUEUE_URL ??
-    'https://sqs.sa-east-1.amazonaws.com/879051259341/students-pickup-queue-test',
+    'https://sqs.sa-east-1.amazonaws.com/879051259341/students-pickup-queue-test.fifo',
   awsRegion: process.env.AWS_DEFAULT_REGION ?? 'sa-east-1',
   redisHost: process.env.REDIS_HOST || 'localhost',
   defaultDistanceThreshold: Number(process.env.DEFAULT_DISTANCE_THRESHOLD) || 5000, // in metters

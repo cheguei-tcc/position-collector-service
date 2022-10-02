@@ -1,5 +1,6 @@
 type QueueOptions = {
   queueUrl?: string;
+  messageGroupId?: string;
 };
 
 interface QueueProducer {

@@ -7,7 +7,7 @@ const enqueue = async (msg: string, options: QueueOptions, logger: Logger) => {
   logger.info(`[SQS Producer] enqueue msg => ${msg}`);
   const producer = Producer.create({ queueUrl: options.queueUrl });
 
-  await producer.send({ id: randomUUID(), body: msg });
+  await producer.send({ id: randomUUID(), body: msg, groupId: options.messageGroupId });
 };
 
 const newSqsPositionMsgProducer = (logger: Logger): QueueProducer => ({

@@ -56,7 +56,10 @@ const handleResponsibleSocketMessage = async (
       status: estimatedTime !== 0 ? Status.ON_THE_WAY : Status.ARRIVED
     };
 
-    await queueProducer.enqueue(JSON.stringify(positionMsg), { queueUrl: config.studentsPickupQueueUrl });
+    await queueProducer.enqueue(JSON.stringify(positionMsg), {
+      queueUrl: config.studentsPickupQueueUrl,
+      messageGroupId: `${CPF}::${school.CNPJ}`
+    });
   }
 };
 
