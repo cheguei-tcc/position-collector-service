@@ -1,16 +1,17 @@
 import { createServer } from 'node:http';
 import { Server } from 'socket.io';
-import { Logger } from 'pino';
 import { PositionCollectorService } from '../../application/services/position-collector';
 import { ResponsibleSocketMessage } from '../../application/dto/socket';
+import { Logger } from '../../application/interfaces/logger';
 
-const healthcheck = async (_request: any, response: any) => {
+const healthcheck = async (request: any, response: any, logger: Logger) => {
   // default is a "healthcheck" route
+  logger.info(`received request ${request.method} - ${request.url}`);
   return response.end(JSON.stringify({ health: 'ok' }));
 };
 
 export const newServer = (logger: Logger, positionCollectorService: PositionCollectorService) => {
-  const httpServer = createServer(healthcheck);
+  const httpServer = createServer(async (req, res) => healthcheck(req, res, logger));
 
   const io = new Server(httpServer, {
     cors: {
