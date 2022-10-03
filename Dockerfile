@@ -12,4 +12,4 @@ WORKDIR /app
 RUN npm ci
 RUN npm run build
 
-CMD npm run start
+CMD npm run start:prod
