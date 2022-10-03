@@ -1,0 +1,20 @@
+- name: copy the stack template to the remote host
+  copy:
+    src: "docker-compose.yaml"
+    dest: "/opt/docker-compose.yaml"
+
+- name: debug students pick queue
+  debug:
+    msg: "Provisioning based on STUDENTS_PICKUP_QUEUE_URL which is: {{ lookup('ansible.builtin.env', 'STUDENTS_PICKUP_QUEUE_URL') }}"
+
+- name: Deploy stack from a compose file
+  docker_stack:
+    state: present
+    name: position-collector
+    compose:
+      - /opt/docker-compose.yaml
+  environment:
+    STUDENTS_PICKUP_QUEUE_URL: "{{ lookup('env', 'STUDENTS_PICKUP_QUEUE_URL')}}"
+    AWS_ACCESS_KEY_ID: "{{ lookup('env', 'AWS_ACCESS_KEY_ID')}}"
+    AWS_SECRET_ACCESS_KEY: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY')}}"
+    AWS_DEFAULT_REGION: "{{ lookup('env', 'AWS_DEFAULT_REGION')}}"

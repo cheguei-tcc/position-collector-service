@@ -1,0 +1,73 @@
+name: Deploy App
+on:
+  push:
+    branches: [master]
+
+jobs:
+  donwload-config:
+    name: Download swarm cluster config
+    runs-on: ubuntu-latest
+    steps:  
+    - name: download swarm hosts config 
+      uses: keithweaver/aws-s3-github-action@v1.0.0
+      with:
+        command: cp
+        source: s3://swarm-machines-tf/hosts
+        destination: ./
+        aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws_region: sa-east-1
+
+    - name: Upload hosts config
+      uses: actions/upload-artifact@v3
+      with:
+        name: hosts
+        path: hosts
+
+  push-to-registry:
+    name: Push Docker image to Docker Hub
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: christianseki/position-collector:latest
+
+  deploy-swarm:
+    name: Deploy to Swarm Cluster
+    needs: [donwload-config, push-to-registry]
+    runs-on: ubuntu-latest
+    steps:  
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Download swarm hosts config
+      uses: actions/download-artifact@v3
+      with:
+        name: hosts
+
+    - name: generate secret cert for ansible
+      run: |
+          echo ${{ secrets.SWARM_MACHINES_KEY }} | base64 -d > ansible/swarm-machines.pem
+          chmod 400 ansible/swarm-machines.pem
+      shell: bash
+
+    - name: deploy to stack with run ansible playbook
+      env:
+        STUDENTS_PICKUP_QUEUE_URL: ${{ secrets.STUDENTS_PICKUP_QUEUE_URL }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: sa-east-1
+      run: mv hosts ansible && cd ansible && ansible-playbook main.yaml

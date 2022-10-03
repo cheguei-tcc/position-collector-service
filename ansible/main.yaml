@@ -1,0 +1,5 @@
+---
+- hosts: manager
+  become: yes
+  roles:
+    - role: deploy-stack
