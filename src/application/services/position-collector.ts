@@ -55,7 +55,7 @@ const handleResponsibleSocketMessage = async (
   await socket.emit({
     event: 'calculated-position',
     group: String(id),
-    payload: { distanceInMeters: distanceMeters, timeInSeconds: estimatedTime }
+    payload: JSON.stringify({ distanceInMeters: distanceMeters, timeInSeconds: estimatedTime })
   });
   logger.info(`[SOCKET] sent calculated-position to room => ${id}`);
 
