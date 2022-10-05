@@ -23,6 +23,10 @@ const handleResponsibleSocketMessage = async (
   logger.info(`consuming message: ${JSON.stringify(responsibleMessage)}`);
   // the usage of CPF and others stuff from frontend is to help us to mock things if needed
   const { id, coordinates, school } = responsibleMessage;
+  if (!id) {
+    logger.info('[DO NOTHING] responsibleId is undefined');
+    return;
+  }
   const { defaultDistanceThreshold, geolocationApiTtlCache } = config;
   const cacheKey = `geoAPIRequest::responsible::${id}`;
 
@@ -47,11 +51,13 @@ const handleResponsibleSocketMessage = async (
   await geoAPICache.set(cacheKey, JSON.stringify({ distanceMeters, estimatedTime }), { ttl: geolocationApiTtlCache });
 
   // emit calculated position event to client socket
+
   await socket.emit({
     event: 'calculated-position',
     group: String(id),
     payload: { distanceInMeters: distanceMeters, timeInSeconds: estimatedTime }
   });
+  logger.info(`[SOCKET] sent calculated-position to room => ${id}`);
 
   if (distanceMeters < defaultDistanceThreshold) {
     const positionMsg: PositionMessage = {

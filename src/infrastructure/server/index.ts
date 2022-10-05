@@ -25,7 +25,7 @@ export const newServer = (logger: Logger, positionCollectorService: PositionColl
 
     // move every socket connected to it respectivelly room which now is the CPF for now
     const room = socket.request.headers['user-surrogate-key'];
-    await socket.join(room!);
+    await socket.join(String(room!));
 
     socket.on('coordinates_sent', async (message: ResponsibleSocketMessage) => {
       try {
