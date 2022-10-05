@@ -2,7 +2,8 @@ import { School } from './school';
 
 type Responsible = {
   name?: string;
-  CPF: string;
+  CPF?: string;
+  id: number;
   school?: School;
 };
 

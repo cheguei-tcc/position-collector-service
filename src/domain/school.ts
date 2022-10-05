@@ -1,7 +1,8 @@
 import { Coordinates } from './coordinates';
 
 type School = {
-  CNPJ: string;
+  id: number;
+  CNPJ?: string;
   name?: string;
   coordinates: Coordinates;
 };

@@ -22,13 +22,13 @@ const handleResponsibleSocketMessage = async (
 ): Promise<void> => {
   logger.info(`consuming message: ${JSON.stringify(responsibleMessage)}`);
   // the usage of CPF and others stuff from frontend is to help us to mock things if needed
-  const { CPF, name, coordinates, school } = responsibleMessage;
+  const { id, coordinates, school } = responsibleMessage;
   const { defaultDistanceThreshold, geolocationApiTtlCache } = config;
-  const cacheKey = `geoAPIRequest::${CPF}`;
+  const cacheKey = `geoAPIRequest::responsible::${id}`;
 
   const isGeoAPIRequestCached = await geoAPICache.get(cacheKey);
   if (isGeoAPIRequestCached) {
-    logger.info(`hit geoAPICache for responsible ${CPF}::${school.CNPJ}`);
+    logger.info(`hit geoAPICache for  responsible::${id}::school::${school.id}`);
     return;
   }
 
@@ -39,7 +39,7 @@ const handleResponsibleSocketMessage = async (
     to: { ...school.coordinates }
   });
   logger.info(
-    ` [POSITION] retrieved for r => ${CPF} \nd => ${distanceMeters}m \nt => ${estimatedTime}s \nfrom => (${JSON.stringify(
+    ` [POSITION] retrieved for responsibleId => ${id} \ndistance => ${distanceMeters}m \ntime => ${estimatedTime}s \nfrom => (${JSON.stringify(
       coordinates
     )}) to => (${JSON.stringify(school.coordinates)})`
   );
@@ -49,7 +49,7 @@ const handleResponsibleSocketMessage = async (
   // emit calculated position event to client socket
   await socket.emit({
     event: 'calculated-position',
-    group: CPF,
+    group: String(id),
     payload: { distanceInMeters: distanceMeters, timeInSeconds: estimatedTime }
   });
 
@@ -58,8 +58,7 @@ const handleResponsibleSocketMessage = async (
       distanceMeters,
       estimatedTime,
       responsible: {
-        CPF,
-        name
+        id
       },
       school,
       status: estimatedTime !== 0 ? Status.ON_THE_WAY : Status.ARRIVED
@@ -68,7 +67,7 @@ const handleResponsibleSocketMessage = async (
     // enqueue to students-pickup consumer
     await queueProducer.enqueue(JSON.stringify(positionMsg), {
       queueUrl: config.studentsPickupQueueUrl,
-      messageGroupId: `${CPF}::${school.CNPJ}`
+      messageGroupId: `${id}`
     });
   }
 };
