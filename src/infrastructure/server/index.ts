@@ -3,6 +3,7 @@ import { Server } from 'socket.io';
 import { PositionCollectorService } from '../../application/services/position-collector';
 import { ResponsibleSocketMessage } from '../../application/dto/socket';
 import { Logger } from '../../application/interfaces/logger';
+import { newSocketIOAdapter } from '../socket/io';
 
 const healthcheck = async (request: any, response: any, logger: Logger) => {
   // default is a "healthcheck" route
@@ -22,9 +23,14 @@ export const newServer = (logger: Logger, positionCollectorService: PositionColl
   io.on('connection', async (socket) => {
     logger.info(`socketId => ${socket.id} connected`);
 
+    // move every socket connected to it respectivelly room which now is the CPF for now
+    const room = socket.request.headers['user-surrogate-key'];
+    await socket.join(room!);
+
     socket.on('coordinates_sent', async (message: ResponsibleSocketMessage) => {
       try {
-        await positionCollectorService.handleResponsibleSocketMessage(message);
+        const socketIOAdapter = newSocketIOAdapter(io);
+        await positionCollectorService.handleResponsibleSocketMessage(message, socketIOAdapter);
       } catch (err: any) {
         logger.error(JSON.stringify(err));
       }

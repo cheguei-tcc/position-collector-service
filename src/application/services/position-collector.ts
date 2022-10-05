@@ -5,9 +5,10 @@ import { Cache } from '../interfaces/cache';
 import { GeolocationAPI } from '../interfaces/gps';
 import { Logger } from '../interfaces/logger';
 import { QueueProducer } from '../interfaces/queue';
+import { Socket } from '../interfaces/socket';
 
 interface PositionCollectorService {
-  handleResponsibleSocketMessage: (message: ResponsibleSocketMessage) => Promise<void>;
+  handleResponsibleSocketMessage: (message: ResponsibleSocketMessage, socket: Socket) => Promise<void>;
 }
 
 const handleResponsibleSocketMessage = async (
@@ -16,6 +17,7 @@ const handleResponsibleSocketMessage = async (
   geoAPI: GeolocationAPI,
   geoAPICache: Cache,
   queueProducer: QueueProducer,
+  socket: Socket,
   config: Config
 ): Promise<void> => {
   logger.info(`consuming message: ${JSON.stringify(responsibleMessage)}`);
@@ -44,6 +46,13 @@ const handleResponsibleSocketMessage = async (
 
   await geoAPICache.set(cacheKey, JSON.stringify({ distanceMeters, estimatedTime }), { ttl: geolocationApiTtlCache });
 
+  // emit calculated position event to client socket
+  await socket.emit({
+    event: 'calculated-position',
+    group: CPF,
+    payload: { distanceInMeters: distanceMeters, timeInSeconds: estimatedTime }
+  });
+
   if (distanceMeters < defaultDistanceThreshold) {
     const positionMsg: PositionMessage = {
       distanceMeters,
@@ -56,6 +65,7 @@ const handleResponsibleSocketMessage = async (
       status: estimatedTime !== 0 ? Status.ON_THE_WAY : Status.ARRIVED
     };
 
+    // enqueue to students-pickup consumer
     await queueProducer.enqueue(JSON.stringify(positionMsg), {
       queueUrl: config.studentsPickupQueueUrl,
       messageGroupId: `${CPF}::${school.CNPJ}`
@@ -70,8 +80,8 @@ const newPositionCollectorService = (
   queueProducer: QueueProducer,
   config: Config
 ): PositionCollectorService => ({
-  handleResponsibleSocketMessage: async (message: ResponsibleSocketMessage) =>
-    handleResponsibleSocketMessage(message, logger, geoAPI, geoAPICache, queueProducer, config)
+  handleResponsibleSocketMessage: async (message: ResponsibleSocketMessage, socket: Socket) =>
+    handleResponsibleSocketMessage(message, logger, geoAPI, geoAPICache, queueProducer, socket, config)
 });
 
 export { newPositionCollectorService, PositionCollectorService };
