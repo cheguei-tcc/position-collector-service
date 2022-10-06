@@ -31,7 +31,7 @@ const initDependenciesAndStart = async (config: Config) => {
 
   const positionCollectorService = newPositionCollectorService(logger, geoAPI, redisCache, sqsProducer, config);
 
-  const { httpServer } = newServer(logger, positionCollectorService);
+  const { httpServer } = newServer(logger, positionCollectorService, config);
 
   try {
     httpServer.listen(config.port, () => logger.info(`listening on port: ${config.port}`));
