@@ -27,7 +27,7 @@ const handleResponsibleSocketMessage = async (
     logger.info('[DO NOTHING] responsibleId is undefined');
     return;
   }
-  const { defaultDistanceThreshold, geolocationApiTtlCache } = config;
+  const { defaultDistanceThreshold, geolocationApiTtlCache, arrivedTimeWindow } = config;
   const cacheKey = `geoAPIRequest::responsible::${id}`;
 
   const isGeoAPIRequestCached = await geoAPICache.get(cacheKey);
@@ -48,10 +48,17 @@ const handleResponsibleSocketMessage = async (
     )}) to => (${JSON.stringify(school.coordinates)})`
   );
 
+  if (estimatedTime <= arrivedTimeWindow) {
+    // emit calculated position event to client socket
+    await socket.emit({
+      event: 'arrived',
+      group: String(id),
+      payload: JSON.stringify({ status: 'ARRIVED' })
+    });
+  }
   await geoAPICache.set(cacheKey, JSON.stringify({ distanceMeters, estimatedTime }), { ttl: geolocationApiTtlCache });
 
   // emit calculated position event to client socket
-
   await socket.emit({
     event: 'calculated-position',
     group: String(id),

@@ -8,6 +8,7 @@ type Config = {
   awsRegion: string;
   defaultDistanceThreshold: number;
   geolocationApiTtlCache: number;
+  arrivedTimeWindow: number;
   osrmOpenAPIUrl: string;
   azureApiUrl: string;
   azureApiSubscriptionKey: string;
@@ -27,7 +28,8 @@ const configFromEnv = (): Config => ({
   geolocationApiTtlCache: Number(process.env.GEOLOCATION_API_TTL_CACHE) || 7, // in seconds
   osrmOpenAPIUrl: process.env.OSRM_OPEN_API_URL || 'https://routing.openstreetmap.de',
   azureApiUrl: process.env.AZURE_API_URL || 'https://atlas.microsoft.com',
-  azureApiSubscriptionKey: process.env.AZURE_API_SUBSCRIPTION_KEY || ''
+  azureApiSubscriptionKey: process.env.AZURE_API_SUBSCRIPTION_KEY || '',
+  arrivedTimeWindow: Number(process.env.ARRIVED_TIME_WINDOW) || 60
 });
 
 export { Config, configFromEnv };
